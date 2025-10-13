@@ -1,0 +1,128 @@
+---
+# Example Kubernetes/OpenShift Job that uses minio-client-tools
+# This job waits for MinIO to be available, then creates and configures buckets
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: minio-bucket-setup
+  namespace: minio
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: minio-setup
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: default
+      
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      
+      containers:
+      - name: minio-setup
+        image: minio-client-tools:latest
+        imagePullPolicy: IfNotPresent
+        
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          
+          echo "Waiting for MinIO service to be available..."
+          wait-for-port --host=${MINIO_HOST} --port=${MINIO_PORT} --timeout=300
+          
+          echo "MinIO is ready. Configuring client..."
+          mc alias set myminio http://${MINIO_HOST}:${MINIO_PORT} ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY}
+          
+          echo "Creating buckets..."
+          mc mb myminio/data --ignore-existing
+          mc mb myminio/backups --ignore-existing
+          mc mb myminio/logs --ignore-existing
+          
+          echo "Setting bucket policies..."
+          # Make data bucket publicly readable (adjust as needed)
+          mc anonymous set public myminio/data
+          
+          # Keep backups and logs private
+          mc anonymous set none myminio/backups
+          mc anonymous set none myminio/logs
+          
+          echo "Setting bucket lifecycle policies..."
+          # Example: expire objects in logs bucket after 30 days
+          cat <<EOF | mc ilm import myminio/logs
+          {
+            "Rules": [
+              {
+                "Expiration": {
+                  "Days": 30
+                },
+                "ID": "expire-old-logs",
+                "Status": "Enabled"
+              }
+            ]
+          }
+          EOF
+          
+          echo "Listing buckets..."
+          mc ls myminio
+          
+          echo "MinIO setup completed successfully!"
+        
+        env:
+        - name: MINIO_HOST
+          value: "minio-service"
+        - name: MINIO_PORT
+          value: "9000"
+        - name: MINIO_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: minio-credentials
+              key: accesskey
+        - name: MINIO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: minio-credentials
+              key: secretkey
+        
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+        
+        volumeMounts:
+        - name: mc-config
+          mountPath: /home/minio/.mc
+      
+      volumes:
+      - name: mc-config
+        emptyDir: {}
+
+---
+# Example Secret for MinIO credentials
+# In production, use SealedSecrets, Vault, or another secure method
+apiVersion: v1
+kind: Secret
+metadata:
+  name: minio-credentials
+  namespace: minio
+type: Opaque
+stringData:
+  accesskey: "admin"
+  secretkey: "changeme123"
+
