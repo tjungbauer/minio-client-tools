@@ -2,7 +2,7 @@
 # Stage 1: Download wait-for-port
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.6-1758184547 AS wait-for-port-downloader
 
-ARG WAIT_FOR_PORT_VERSION=1.0.7
+ARG WAIT_FOR_PORT_VERSION=1.0.10
 
 RUN microdnf install -y wget tar gzip && \
     microdnf clean all
@@ -27,7 +27,7 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal:9.6-1758184547
 
 LABEL name="minio-client-tools" \
       vendor="Custom" \
-      version="1.0.1" \
+      version="1.0.2" \
       summary="MinIO Client and wait-for-port utility for OpenShift" \
       description="This image contains the MinIO client (mc) and Bitnami's wait-for-port utility, \
                    optimized for running on OpenShift clusters with arbitrary user IDs."

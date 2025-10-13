@@ -28,7 +28,7 @@ Use the provided build script:
 Or specify a custom image name:
 
 ```bash
-./build.sh minio-client-tools:v1.0.1
+./build.sh minio-client-tools:v1.0.2
 ```
 
 ### Manual Build
@@ -46,7 +46,7 @@ You can customize the versions of the tools during build:
 ```bash
 podman build \
   --platform linux/amd64 \
-  --build-arg WAIT_FOR_PORT_VERSION=1.0.7 \
+  --build-arg WAIT_FOR_PORT_VERSION=1.0.10 \
   --build-arg MINIO_CLIENT_VERSION=RELEASE.2024-10-08T09-37-26Z \
   -t minio-client-tools:latest .
 ```

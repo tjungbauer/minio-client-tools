@@ -21,7 +21,7 @@ echo "======================================="
 podman build \
     --format docker \
     --platform linux/amd64 \
-    --build-arg WAIT_FOR_PORT_VERSION=1.0.7 \
+    --build-arg WAIT_FOR_PORT_VERSION=1.0.10 \
     --build-arg MINIO_CLIENT_VERSION=RELEASE.2024-10-08T09-37-26Z \
     -t "${IMAGE_NAME}" \
     .
