@@ -27,7 +27,7 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal:9.6-1758184547
 
 LABEL name="minio-client-tools" \
       vendor="Custom" \
-      version="1.0.0" \
+      version="1.0.1" \
       summary="MinIO Client and wait-for-port utility for OpenShift" \
       description="This image contains the MinIO client (mc) and Bitnami's wait-for-port utility, \
                    optimized for running on OpenShift clusters with arbitrary user IDs."
