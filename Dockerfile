@@ -1,6 +1,6 @@
 # Multi-stage build for minio-client and wait-for-port
 # Stage 1: Download wait-for-port
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.6-1758184547 AS wait-for-port-downloader
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.7-1764578379 AS wait-for-port-downloader
 
 ARG WAIT_FOR_PORT_VERSION=1.0.10
 
@@ -12,7 +12,7 @@ RUN wget https://github.com/bitnami/wait-for-port/releases/download/v${WAIT_FOR_
     chmod +x wait-for-port-linux-amd64
 
 # Stage 2: Download minio client
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.6-1758184547 AS minio-client-downloader
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.7-1764578379 AS minio-client-downloader
 
 ARG MINIO_CLIENT_VERSION=RELEASE.2024-10-08T09-37-26Z
 
@@ -23,7 +23,7 @@ RUN wget https://dl.min.io/client/mc/release/linux-amd64/archive/mc.${MINIO_CLIE
     chmod +x mc
 
 # Final stage: Create the runtime image
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.6-1758184547
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.7-1764578379
 
 LABEL name="minio-client-tools" \
       vendor="Custom" \
@@ -38,6 +38,7 @@ RUN microdnf install -y \
     shadow-utils \
     bash \
     glibc \
+    findutils \
     && microdnf clean all
 
 # Copy binaries from build stages
